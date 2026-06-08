@@ -1,0 +1,27 @@
+# Dataset (large .mat files)
+CWRU Dataest/
+
+# Model checkpoints
+*.pth
+results/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# Output/temp text files
+*_output.txt
+exp_*.txt
+compare*.txt
+final_output.txt
+opt_output.txt
+sota_paper_text.txt
+
+# OS
+.DS_Store
+Thumbs.db
