@@ -42,14 +42,18 @@ class Denoiser(nn.Module):
         super().__init__()
         from model.sud import sinc_kernel_init
         from utils import calculate_fault_frequency
+        from config import BEARING_PARAMS
+        fs = BEARING_PARAMS["fs"]
         freqs = []
         for wc in [0, 1, 2, 3]:
             ff = calculate_fault_frequency(wc)
             for key in ["bpfi", "bpfo", "bsf", "fr"]:
                 for k in range(1, 5): freqs.append(ff[key] * k)
         c = sorted(set(freqs))
-        self.s = nn.Conv1d(1, nk, 15, padding=7, bias=False)
-        self.s.weight = nn.Parameter(sinc_kernel_init(nk, 15, c, 12000))
+        ks = max(15, int(15 * fs / 12000))
+        if ks % 2 == 0: ks += 1  # ensure odd for same-padding
+        self.s = nn.Conv1d(1, nk, ks, padding=ks // 2, bias=False)
+        self.s.weight = nn.Parameter(sinc_kernel_init(nk, ks, c, fs))
         self.k1 = SK(nk); self.e1 = ECA(nk)
         self.k2 = SK(nk); self.e2 = ECA(nk)
         self.l = LKDW(nk, 31); self.r = nn.Conv1d(nk, 1, 7, padding=3)

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp *)",
+      "WebSearch",
+      "Bash(export ECC_GATEGUARD=off)",
+      "Bash(python -c ' *)",
+      "Bash(python main.py)",
+      "WebFetch(domain:www.sciencedirect.com)",
+      "WebFetch(domain:journals.plos.org)",
+      "mcp__plugin_ecc_exa__web_fetch_exa",
+      "mcp__plugin_ecc_exa__web_search_exa",
+      "Bash(python run_experiments.py)",
+      "Bash(python train_v7.py)",
+      "Bash(python -u -c \"import torch; from model.dx_pinn import DX_PINN; m=DX_PINN\\(\\); x=torch.randn\\(2,1024\\); t=torch.linspace\\(0,1,1024\\).repeat\\(2,1\\); o=m\\(x,t\\); print\\('Forward OK:', o['cls_pred'].shape\\)\")",
+      "Bash(python -u -c ' *)"
+    ]
+  }
+}

@@ -1,11 +1,16 @@
 import torch
 import os
 
-# ===================== 核心路径配置（仅需修改此处！）=====================
-# 数据集根目录：要求根目录下有 0HP、1HP、2HP、3HP 四个文件夹
-# 每个工况文件夹内有10个故障子文件夹：NC、IF1、IF2、IF3、OF1、OF2、OF3、RF1、RF2、RF3
-# 每个子文件夹内有1个对应的.mat文件
-DATA_ROOT = "./CWRU Dataest"  # 替换为你的数据集根目录
+# ===================== 数据集选择 =====================
+DATASET = "CWRU"  # "CWRU" or "MFPT" or "XJTU"
+
+# ===================== 核心路径配置 =====================
+if DATASET == "CWRU":
+    DATA_ROOT = "./CWRU Dataest"
+elif DATASET == "MFPT":
+    DATA_ROOT = "./MFPT"
+else:
+    DATA_ROOT = r"D:\BaiduNetdiskDownload\XJTU-SY_Bearing_Datasets\Data\XJTU-SY_Bearing_Datasets.part01\XJTU-SY_Bearing_Datasets"
 
 # 模型与结果保存路径
 SAVE_PATH = "./results"
@@ -19,36 +24,35 @@ TRAIN_WORK_CONDITION = 0
 TEST_WORK_CONDITIONS = [0,1,2,3]
 
 # 故障类别与标签映射
-FAULT_CLASSES = {
-    "NC": 0,   # 正常
-    "IF1": 1,  # 内圈故障 0.1778mm
-    "IF2": 2,  # 内圈故障 0.3556mm
-    "IF3": 3,  # 内圈故障 0.5334mm
-    "OF1": 4,  # 外圈故障 0.1778mm
-    "OF2": 5,  # 外圈故障 0.3556mm
-    "OF3": 6,  # 外圈故障 0.5334mm
-    "BF1": 7,  # 滚动体故障 0.1778mm
-    "BF2": 8,  # 滚动体故障 0.3556mm
-    "BF3": 9   # 滚动体故障 0.5334mm
-}
+if DATASET == "CWRU":
+    FAULT_CLASSES = {
+        "NC": 0, "IF1": 1, "IF2": 2, "IF3": 3,
+        "OF1": 4, "OF2": 5, "OF3": 6,
+        "BF1": 7, "BF2": 8, "BF3": 9,
+    }
+    BEARING_PARAMS = {
+        "D": 39.04e-3, "d": 7.94e-3, "Z": 9, "alpha": 0, "fs": 12000,
+    }
+elif DATASET == "MFPT":
+    FAULT_CLASSES = {"NC": 0, "IF1": 1, "IF2": 2, "OF1": 3, "OF2": 4}
+    BEARING_PARAMS = {
+        "D": 31.623e-3, "d": 5.969e-3, "Z": 8, "alpha": 0, "fs": 48828,
+    }
+else:  # XJTU-SY: LDK UER204, 4 classes (NC/IF/OF/CF), cond2=37.5Hz11kN
+    FAULT_CLASSES = {"NC": 0, "IF": 1, "OF": 2, "CF": 3}
+    BEARING_PARAMS = {
+        "D": 34.55e-3, "d": 7.92e-3, "Z": 8, "alpha": 0, "fs": 25600,
+    }
 NUM_CLASSES = len(FAULT_CLASSES)
 
-# 轴承核心几何参数（严格匹配CWRU 6205-2RS轴承，论文表1）
-BEARING_PARAMS = {
-    "D": 39.04e-3,    # 节圆直径，单位m
-    "d": 7.94e-3,     # 滚动体直径，单位m
-    "Z": 9,            # 滚动体个数
-    "alpha": 0,        # 接触角，单位rad
-    "fs": 12000,       # 采样频率，单位Hz
-}
+if DATASET == "CWRU":
+    SHAFT_SPEED = {0: 1797, 1: 1772, 2: 1750, 3: 1730}
+elif DATASET == "MFPT":
+    SHAFT_SPEED = {0: 1500, 1: 1500, 2: 1500, 3: 1500}
+else:  # XJTU-SY: 3 conditions, key 3 mapped for model compat
+    SHAFT_SPEED = {0: 2100, 1: 2250, 2: 2400, 3: 2250}  # RPM
 
-# 各工况对应的轴转速（CWRU官方标准值）
-SHAFT_SPEED = {
-    0: 1797,  # 0HP 转速 rpm
-    1: 1772,  # 1HP 转速 rpm
-    2: 1750,  # 2HP 转速 rpm
-    3: 1730   # 3HP 转速 rpm
-}
+TRAIN_SNR_RANGE = (-10, 10)
 
 # 样本参数
 SAMPLE_LENGTH = 1024

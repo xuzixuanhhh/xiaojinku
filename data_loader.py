@@ -55,13 +55,65 @@ def sliding_window_sampling(data, label, sample_length, sliding_step):
         start_idx += sliding_step
     return np.array(samples), np.array(labels)
 
+# ===================== MFPT数据集加载 =====================
+def load_mfpt_dataset(target_sr=48828):
+    """加载MFPT数据集，5类，保持原生采样率48.8kHz。"""
+    from scipy.signal import resample as scipy_resample
+    all_samples = []
+    all_labels = []
+
+    for fault_name, label in FAULT_CLASSES.items():
+        fault_dir = os.path.join(DATA_ROOT, fault_name)
+        if not os.path.exists(fault_dir):
+            print(f"WARN: MFPT dir {fault_dir} not found, skip")
+            continue
+        mat_files = [f for f in os.listdir(fault_dir) if f.endswith(".mat")]
+        for mf in mat_files:
+            mat_path = os.path.join(fault_dir, mf)
+            d = loadmat(mat_path)
+            bearing = d["bearing"]
+            gs = bearing["gs"][0, 0].reshape(-1).astype(np.float64)
+            sr = int(bearing["sr"][0, 0].item())
+
+            if sr != target_sr:
+                new_len = int(len(gs) * target_sr / sr)
+                gs = scipy_resample(gs, new_len)
+
+            gs = 2 * (gs - np.min(gs)) / (np.max(gs) - np.min(gs) + 1e-8) - 1
+            samples, labels = sliding_window_sampling(gs, label, SAMPLE_LENGTH, SLIDING_STEP)
+            all_samples.append(samples)
+            all_labels.append(labels)
+            print(f"MFPT-{fault_name}/{mf}: {len(gs)}pts -> {len(samples)}samples")
+
+    all_samples = np.concatenate(all_samples, axis=0)
+    all_labels = np.concatenate(all_labels, axis=0)
+
+    np.random.seed(42)
+    idx = np.random.permutation(len(all_samples))
+    all_samples, all_labels = all_samples[idx], all_labels[idx]
+
+    total = len(all_samples)
+    tn = int(total * TRAIN_RATIO)
+    vn = int(total * VAL_RATIO)
+
+    train_data = all_samples[:tn]
+    train_label = all_labels[:tn]
+    val_data = all_samples[tn:tn+vn]
+    val_label = all_labels[tn:tn+vn]
+    test_data = all_samples[tn+vn:]
+    test_label = all_labels[tn+vn:]
+
+    print(f"\nMFPT dataset loaded: {total} samples, {NUM_CLASSES} classes")
+    print(f"Train: {len(train_data)}, Val: {len(val_data)}, Test: {len(test_data)}")
+    return train_data, val_data, test_data, train_label, val_label, test_label
+
+
 # ===================== 数据集加载主函数 =====================
 def load_dataset(work_condition):
-    """
-    加载指定工况的完整数据集
-    :param work_condition: 工况编号 0/1/2/3
-    :return: train_data, val_data, test_data, train_label, val_label, test_label
-    """
+    """Load dataset. work_condition is ignored for MFPT (compatibility interface)."""
+    if DATASET == "MFPT":
+        return load_mfpt_dataset()
+    # === CWRU ===
     all_samples = []
     all_labels = []
     work_condition_dir = os.path.join(DATA_ROOT, f"{work_condition}HP")

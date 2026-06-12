@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python train_matched.py)",
+      "Bash(python tune_hyper.py)",
+      "Bash(python tune_hyper2.py)",
+      "Bash(python train_final2.py)",
+      "Bash(python tune_hyper3.py)",
+      "Bash(python tune_ema.py)",
+      "Bash(python tune_quick.py)",
+      "Bash(python test_100ep.py)",
+      "Bash(python test_100ep2.py)",
+      "Bash(python phase1_final.py)",
+      "Bash(python phase1_original.py)",
+      "Bash(# Search everywhere for tune_v5v6 *)",
+      "Read(//c/Users/shuxzx/Desktop/代码项目/qk/**)",
+      "Bash(python -u -c ' *)",
+      "Bash(python -u reproduce_v5ls.py)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git config *)",
+      "Bash(gh auth *)",
+      "mcp__plugin_ecc_github__create_repository",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Read(//c/Users/shuxzx/Desktop/**)"
+    ]
+  }
+}
